@@ -21,10 +21,10 @@ app.config["SESSION_COOKIE_NAME"] = "chatbot_session_v2"
 # -----------------------------
 # API / externe Dienste
 # -----------------------------
-MISTRAL_API_KEY = os.environ.get("MISTRAL_API_KEY")
-MISTRAL_MODEL = os.environ.get("MISTRAL_MODEL", "GPT OSS 120B")
-MISTRAL_API_URL = os.environ.get(
-    "MISTRAL_API_URL",
+LLM_API_KEY = os.environ.get("LLM_API_KEY")
+LLM_MODEL = os.environ.get("LLM_MODEL", "GPT OSS 120B")
+LLM_API_URL = os.environ.get(
+    "LLM_API_URL",
     "https://ki-chat.uni-mainz.de/api/chat/completions"
 )
 
@@ -453,17 +453,17 @@ def ask_mistral(chat_history):
             })
 
     headers = {
-        "Authorization": f"Bearer {MISTRAL_API_KEY}",
+        "Authorization": f"Bearer {LLM_API_KEY}",
         "Content-Type": "application/json"
     }
 
     data = {
-        "model": MISTRAL_MODEL,
+        "model": LLM_MODEL,
         "messages": messages
     }
 
     response = requests.post(
-        MISTRAL_API_URL,
+         LLM_API_URL,
         headers=headers,
         json=data,
         timeout=60

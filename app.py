@@ -433,11 +433,7 @@ def save_chat_history_to_seafile(chat_history):
 
 
 def ask_mistral(chat_history):
-    messages = [
-    {
-        "role": "system",
-        "content": (
-            messages = [
+   messages = [
     {
         "role": "system",
         "content": (

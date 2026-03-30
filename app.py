@@ -432,7 +432,7 @@ def save_chat_history_to_seafile(chat_history):
         upload_new_file_to_seafile(file_bytes)
 
 
-ddef ask_mistral(chat_history):
+def ask_mistral(chat_history):
     messages = [
         {
             "role": "system",

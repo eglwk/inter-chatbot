@@ -28,11 +28,11 @@ LLM_API_URL = os.environ.get(
     "https://ki-chat.uni-mainz.de/api/chat/completions"
 ).strip()
 
-SEAFILE_BASE_URL = os.environ.get("SEAFILE_BASE_URL")
-SEAFILE_TOKEN = os.environ.get("SEAFILE_TOKEN")
-SEAFILE_REPO_ID = os.environ.get("SEAFILE_REPO_ID")
-STUDY_DAY = os.environ.get("STUDY_DAY", "1")
-DATABASE_URL = os.environ.get("DATABASE_URL")
+SEAFILE_BASE_URL = os.environ.get("SEAFILE_BASE_URL", "").strip()
+SEAFILE_TOKEN = os.environ.get("SEAFILE_TOKEN", "").strip()
+SEAFILE_REPO_ID = os.environ.get("SEAFILE_REPO_ID", "").strip()
+STUDY_DAY = os.environ.get("STUDY_DAY", "1").strip()
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
 # -----------------------------
 # Hilfslisten für Anonymisierung

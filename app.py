@@ -25,7 +25,7 @@ MISTRAL_API_KEY = os.environ.get("MISTRAL_API_KEY")
 MISTRAL_MODEL = os.environ.get("MISTRAL_MODEL", "GPT OSS 120B")
 MISTRAL_API_URL = os.environ.get(
     "MISTRAL_API_URL",
-    "https://ki-chat.uni-mainz.de/api/models"
+    "https://ki-chat.uni-mainz.de/api/chat/completions"
 )
 
 SEAFILE_BASE_URL = os.environ.get("SEAFILE_BASE_URL")

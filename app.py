@@ -479,6 +479,32 @@ def ask_mistral(chat_history):
 # -----------------------------
 # Routen
 # -----------------------------
+
+@app.route("/test_seafile_exact")
+def test_seafile_exact():
+    headers = {
+        "Authorization": f"Token {SEAFILE_TOKEN}",
+        "Accept": "application/json"
+    }
+
+    upload_url = f"{SEAFILE_BASE_URL}/api2/repos/{SEAFILE_REPO_ID}/upload-link/"
+    update_url = f"{SEAFILE_BASE_URL}/api2/repos/{SEAFILE_REPO_ID}/update-link/"
+    file_url = f"{SEAFILE_BASE_URL}/api2/repos/{SEAFILE_REPO_ID}/file/"
+
+    return jsonify({
+        "base_url_repr": repr(SEAFILE_BASE_URL),
+        "repo_id_repr": repr(SEAFILE_REPO_ID),
+        "token_length": len(SEAFILE_TOKEN) if SEAFILE_TOKEN else 0,
+        "upload_url": upload_url,
+        "update_url": update_url,
+        "file_url": file_url,
+        "chat_filename": get_chat_filename(),
+        "chat_path": get_chat_path()
+    })
+
+
+
+
 @app.route("/register", methods=["GET", "POST"])
 
 def register():

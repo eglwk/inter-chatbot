@@ -21,12 +21,12 @@ app.config["SESSION_COOKIE_NAME"] = "chatbot_session_v2"
 # -----------------------------
 # API / externe Dienste
 # -----------------------------
-LLM_API_KEY = os.environ.get("LLM_API_KEY")
-LLM_MODEL = os.environ.get("LLM_MODEL", "GPT OSS 120B")
+LLM_API_KEY = os.environ.get("LLM_API_KEY", "").strip()
+LLM_MODEL = os.environ.get("LLM_MODEL", "GPT OSS 120B").strip()
 LLM_API_URL = os.environ.get(
     "LLM_API_URL",
     "https://ki-chat.uni-mainz.de/api/chat/completions"
-)
+).strip()
 
 SEAFILE_BASE_URL = os.environ.get("SEAFILE_BASE_URL")
 SEAFILE_TOKEN = os.environ.get("SEAFILE_TOKEN")
@@ -701,6 +701,28 @@ def test_anonymization():
 @app.route("/healthz")
 def healthz():
     return "ok", 200
+
+@app.route("/test_models")
+def test_models():
+    headers = {
+        "Authorization": f"Bearer {LLM_API_KEY}"
+    }
+
+    response = requests.get(
+        "https://ki-chat.uni-mainz.de/api/models",
+        headers=headers,
+        timeout=30
+    )
+
+    try:
+        data = response.json()
+    except Exception:
+        data = response.text
+
+    return jsonify({
+        "status_code": response.status_code,
+        "data": data
+    })
 
 @app.route("/test_users")
 def test_users():

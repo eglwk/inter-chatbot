@@ -22,10 +22,10 @@ app.config["SESSION_COOKIE_NAME"] = "chatbot_session_v2"
 # API / externe Dienste
 # -----------------------------
 MISTRAL_API_KEY = os.environ.get("MISTRAL_API_KEY")
-MISTRAL_MODEL = os.environ.get("MISTRAL_MODEL", "ministral-3b-2512")
+MISTRAL_MODEL = os.environ.get("MISTRAL_MODEL", "GPT OSS 120B")
 MISTRAL_API_URL = os.environ.get(
     "MISTRAL_API_URL",
-    "https://api.mistral.ai/v1/chat/completions"
+    "https://ki-chat.uni-mainz.de/api/models"
 )
 
 SEAFILE_BASE_URL = os.environ.get("SEAFILE_BASE_URL")

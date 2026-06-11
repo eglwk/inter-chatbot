@@ -16,7 +16,7 @@ app.config["SESSION_COOKIE_SAMESITE"] = "None"
 app.config["SESSION_COOKIE_PARTITIONED"] = True
 app.config["SESSION_COOKIE_NAME"] = "chatbot_session_v3"
 
-MAX_CHAT_SECONDS = 9 * 60 + 30  # 9:30 Minuten = 570 Sekunden
+MAX_CHAT_SECONDS = 6 * 60 + 30  # 9:30 Minuten = 570 Sekunden
 
 
 # -----------------------------

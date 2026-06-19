@@ -5,6 +5,7 @@ import os
 import json
 import re
 import time
+import uuid
 
 load_dotenv()
 
@@ -16,7 +17,7 @@ app.config["SESSION_COOKIE_SAMESITE"] = "None"
 app.config["SESSION_COOKIE_PARTITIONED"] = True
 app.config["SESSION_COOKIE_NAME"] = "chatbot_session_v3"
 
-MAX_CHAT_SECONDS = 5 * 60 + 30  # 9:30 Minuten = 570 Sekunden
+MAX_CHAT_SECONDS = 5 * 60 + 30  # 5:30 Minuten = 330 Sekunden
 
 
 # -----------------------------
@@ -131,31 +132,20 @@ def list_seafile_target_files():
 
 def get_next_vp_id():
     """
-    Sucht im Seafile-Zielordner nach vorhandenen Dateien wie:
-    vp1.json, vp2.json, vp3.json ...
-
-    Danach wird die nächste freie Nummer vergeben.
+    Fallback-ID, falls keine SoSci-case-ID übergeben wurde.
+    UUID ist parallelitätssicherer als vp1, vp2, vp3.
     """
-    filenames = list_seafile_target_files()
-
-    max_number = 0
-
-    for filename in filenames:
-        match = re.match(r"^vp(\d+)\.json$", filename)
-        if match:
-            number = int(match.group(1))
-            if number > max_number:
-                max_number = number
-
-    return f"vp{max_number + 1}"
+    return f"vp_{uuid.uuid4().hex[:12]}"
 
 
 def create_new_chat_session():
     """
-    Wird bei jedem Laden von / ausgeführt.
-    Dadurch bekommt jeder Seitenaufruf eine neue VP-ID.
+    Erstellt nur dann eine neue VP-ID, wenn noch keine Session existiert.
+    Reloads behalten dieselbe VP-ID.
     """
-    session.clear()
+    if "vp_id" in session:
+        return session["vp_id"]
+
     vp_id = get_next_vp_id()
     session["vp_id"] = vp_id
     session["chat_started_at"] = time.time()
@@ -570,7 +560,18 @@ def get_remaining_chat_seconds():
 # -----------------------------
 @app.route("/")
 def home():
-    vp_id = create_new_chat_session()
+    case_id = request.args.get("case", "").strip()
+
+    if case_id:
+        safe_case = make_safe_filename(case_id)
+        vp_id = f"sosci_{safe_case}"
+
+        if session.get("vp_id") != vp_id:
+            session["vp_id"] = vp_id
+            session["chat_started_at"] = time.time()
+            session["chat_ended"] = False
+    else:
+        vp_id = create_new_chat_session()
 
     return render_template(
         "index1.html",
@@ -604,7 +605,10 @@ def chat_status():
 @app.route("/send", methods=["POST"])
 def send():
     if "vp_id" not in session:
-        session["vp_id"] = get_next_vp_id()
+        return jsonify({
+            "error": "Session verloren. Bitte den Chat über SoSciSurvey neu öffnen.",
+            "ended": True
+        }), 440
 
     ensure_chat_timer()
 
@@ -649,7 +653,7 @@ def send():
         if is_final_reply:
             chat_history.append({
                 "role": "system",
-                "content": "CHAT_ENDED_AFTER_9_30_MINUTES"
+                "content": "CHAT_ENDED_AFTER_5_30_MINUTES"
             })
             session["chat_ended"] = True
 

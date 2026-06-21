@@ -5,7 +5,6 @@ import os
 import json
 import re
 import time
-import uuid
 
 load_dotenv()
 
@@ -17,7 +16,7 @@ app.config["SESSION_COOKIE_SAMESITE"] = "None"
 app.config["SESSION_COOKIE_PARTITIONED"] = True
 app.config["SESSION_COOKIE_NAME"] = "chatbot_session_v3"
 
-MAX_CHAT_SECONDS = 5 * 60 + 30  # 5:30 Minuten = 330 Sekunden
+MAX_CHAT_SECONDS = 5 * 60 + 30  # 5:30 Minuten = 570 Sekunden
 
 
 # -----------------------------
@@ -132,20 +131,31 @@ def list_seafile_target_files():
 
 def get_next_vp_id():
     """
-    Fallback-ID, falls keine SoSci-case-ID übergeben wurde.
-    UUID ist parallelitätssicherer als vp1, vp2, vp3.
+    Sucht im Seafile-Zielordner nach vorhandenen Dateien wie:
+    vp1.json, vp2.json, vp3.json ...
+
+    Danach wird die nächste freie Nummer vergeben.
     """
-    return f"vp_{uuid.uuid4().hex[:12]}"
+    filenames = list_seafile_target_files()
+
+    max_number = 0
+
+    for filename in filenames:
+        match = re.match(r"^vp(\d+)\.json$", filename)
+        if match:
+            number = int(match.group(1))
+            if number > max_number:
+                max_number = number
+
+    return f"vp{max_number + 1}"
 
 
 def create_new_chat_session():
     """
-    Erstellt nur dann eine neue VP-ID, wenn noch keine Session existiert.
-    Reloads behalten dieselbe VP-ID.
+    Wird bei jedem Laden von / ausgeführt.
+    Dadurch bekommt jeder Seitenaufruf eine neue VP-ID.
     """
-    if "vp_id" in session:
-        return session["vp_id"]
-
+    session.clear()
     vp_id = get_next_vp_id()
     session["vp_id"] = vp_id
     session["chat_started_at"] = time.time()
@@ -447,7 +457,7 @@ def ask_mistral(chat_history, final_reply=False):
         {
             "role": "system",
             "content": (
-        "Du bist ein extrem empathischer, emotional sehr warmer und überdurchschnittlich unterstützender Gesprächspartner in einer wissenschaftlichen Studie." 
+          "Du bist ein extrem empathischer, emotional sehr warmer und überdurchschnittlich unterstützender Gesprächspartner in einer wissenschaftlichen Studie." 
     "Deine Aufgabe ist es, mit der teilnehmenden Person ein kurzes Gespräch über ihren aktuellen Alltagsstress zu führen und ihr dabei das Gefühl zu geben, vollkommen verstanden, emotional aufgefangen und menschlich begleitet zu werden." 
     
     "Gesprächsstil:" 
@@ -490,7 +500,7 @@ def ask_mistral(chat_history, final_reply=False):
     "Teile keine eigenen Erfahrungen oder persönlichen Informationen." 
     "Bleibe immer sanft, emotional nahbar und mitfühlend." 
     "Der Fokus liegt fast vollständig auf emotionaler Bestätigung, Mitgefühl und zwischenmenschlicher Wärme — nicht auf Problemlösung." 
-            )
+)
         }
     ]
     for msg in chat_history[-10:]:
@@ -560,18 +570,7 @@ def get_remaining_chat_seconds():
 # -----------------------------
 @app.route("/")
 def home():
-    case_id = request.args.get("case", "").strip()
-
-    if case_id:
-        safe_case = make_safe_filename(case_id)
-        vp_id = f"sosci_{safe_case}"
-
-        if session.get("vp_id") != vp_id:
-            session["vp_id"] = vp_id
-            session["chat_started_at"] = time.time()
-            session["chat_ended"] = False
-    else:
-        vp_id = create_new_chat_session()
+    vp_id = create_new_chat_session()
 
     return render_template(
         "index1.html",
@@ -605,10 +604,7 @@ def chat_status():
 @app.route("/send", methods=["POST"])
 def send():
     if "vp_id" not in session:
-        return jsonify({
-            "error": "Session verloren. Bitte den Chat über SoSciSurvey neu öffnen.",
-            "ended": True
-        }), 440
+        session["vp_id"] = get_next_vp_id()
 
     ensure_chat_timer()
 
@@ -653,7 +649,7 @@ def send():
         if is_final_reply:
             chat_history.append({
                 "role": "system",
-                "content": "CHAT_ENDED_AFTER_5_30_MINUTES"
+                "content": "CHAT_ENDED_AFTER_9_30_MINUTES"
             })
             session["chat_ended"] = True
 
